@@ -11,7 +11,8 @@ Allows minting, burning, redeeming, checking balance and transferring tokens bet
 1. Allows minting tokens, through the mint function.
 2. Allows token holders to burn their own tokens, through the burn function which effectively reduce the token supply.
 3. Allows transferring tokens to other addresses. 
-4. Allows checking total supply of other addresses. 
+4. Allows checking total supply of other addresses.
+5. Allows to check amount of Kins Class
 
 ### What to do before executing program?
 
