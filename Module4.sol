@@ -1,43 +1,56 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Degen is ERC20, Ownable {
-    mapping(uint256 => uint256) public prices;
+contract DegenToken is ERC20, Ownable {
+    mapping(uint256 => uint256) public KinsClass;
 
-    constructor(address firstOwner)
-        ERC20("Degen", "DGN")
-        Ownable(firstOwner)
-    {
-        _mint(firstOwner, 600);
-        prices[1] = 50;
-        prices[2] = 100;
-        prices[3] = 150;
+    event KinsClassRedeemed(address indexed redeemer, uint256 indexed kinId, uint256 price);
+
+    constructor(uint256 initialSupply) ERC20("Degen", "DGN") Ownable(msg.sender) {
+        _mint(msg.sender, initialSupply);
+     
+        KinsClass[1] = 400;
+        KinsClass[2] = 300;
+        KinsClass[3] = 20;
+        KinsClass[4] = 450;
     }
 
-    function mint(address receiver, uint256 amount) public onlyOwner {
-        require(amount > 0);
-        _mint(receiver, amount);
+    function mintToken(address to, uint256 amount) public onlyOwner {
+    require(amount >= 250, "Amount to be minted should be greater than or equal 250");
+    _mint(to, amount);
     }
 
-    function burn(uint256 amount) public onlyOwner {
-        require(amount > 0 && balanceOf(msg.sender) >= amount);
+    function burnToken(uint256 amount) public {
         _burn(msg.sender, amount);
     }
-
-    function transfer(address to, uint256 amount) public override returns (bool) {
-        _transfer(msg.sender, to, amount);
-        return true;
+ 
+    function transferToken(address recipient, uint256 amount) public virtual returns (bool) {
+    require(amount <= balanceOf(_msgSender()), "ERC20: transfer amount exceeds balance");
+    _transfer(_msgSender(), recipient, amount);
+    _burn(_msgSender(), amount); 
+    return true;
     }
 
-    function redeem(uint256 itemId) public {
-        uint256 price = prices[itemId];
-        _burn(msg.sender, price);
+
+   function redeemKinClass(uint256 kinId) public {
+    require(KinsClass[kinId] > 0, "Invalid KinsClassID"); 
+    uint256 price = KinsClass[kinId];
+    require(balanceOf(msg.sender) >= price, "Insufficient balance");
+
+    _burn(msg.sender, price);
+    emit KinsClassRedeemed(msg.sender, kinId, price);
     }
 
-    function balanceOf(address account) public view override returns (uint256) {
+    function balanceOf(address account) public view virtual override returns (uint256) {
         return super.balanceOf(account);
     }
+
+   function getKinsClassPrice(uint256 kinId) public view returns (uint256) {
+    require(KinsClass[kinId] > 0, "No existing KinID");
+    return KinsClass[kinId];
+    }
+
 }
