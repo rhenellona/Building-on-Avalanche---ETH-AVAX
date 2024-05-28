@@ -1,48 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DegenToken is ERC20, Ownable {
-    mapping(uint256 => uint256) public itemPrices;
+contract Degen is ERC20, Ownable {
+    mapping(uint256 => uint256) public prices;
 
-    event ItemRedeemed(address indexed redeemer, uint256 indexed itemId, uint256 price);
-
-    constructor(uint256 initialSupply) ERC20("Degen", "DGN") Ownable(msg.sender) {
-        _mint(msg.sender, initialSupply);
-        // Set initial item prices
-        itemPrices[1] = 400;
-        itemPrices[2] = 300;
-        itemPrices[3] = 200;
-        itemPrices[4] = 450;
+    constructor(address firstOwner)
+        ERC20("Degen", "DGN")
+        Ownable(firstOwner)
+    {
+        _mint(firstOwner, 600);
+        prices[1] = 50;
+        prices[2] = 100;
+        prices[3] = 150;
     }
 
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount);
+    function mint(address receiver, uint256 amount) public onlyOwner {
+        require(amount > 0);
+        _mint(receiver, amount);
     }
 
-    function burn(uint256 amount) public {
+    function burn(uint256 amount) public onlyOwner {
+        require(amount > 0 && balanceOf(msg.sender) >= amount);
         _burn(msg.sender, amount);
     }
 
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
-        _transfer(_msgSender(), to, amount);
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        _transfer(msg.sender, to, amount);
         return true;
     }
 
-
     function redeem(uint256 itemId) public {
-        uint256 price = itemPrices[itemId];
-        require(price > 0, "Item not available for redemption");
-        require(balanceOf(msg.sender) >= price, "Insufficient balance");
-
+        uint256 price = prices[itemId];
         _burn(msg.sender, price);
-        emit ItemRedeemed(msg.sender, itemId, price);
     }
 
-    function balanceOf(address account) public view virtual override returns (uint256) {
+    function balanceOf(address account) public view override returns (uint256) {
         return super.balanceOf(account);
     }
 }
-
