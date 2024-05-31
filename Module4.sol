@@ -11,46 +11,48 @@ contract DegenToken is ERC20, Ownable {
 
     constructor(uint256 initialSupply) ERC20("Degen", "DGN") Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
-     
+
         KinsClass[1] = 400;
         KinsClass[2] = 300;
         KinsClass[3] = 20;
         KinsClass[4] = 450;
     }
 
+    function checkDGNTokenBal() external view returns (uint256) {
+        return balanceOf(msg.sender);
+    }
+
     function mintToken(address to, uint256 amount) public onlyOwner {
-    require(amount >= 250, "Amount to be minted should be greater than or equal 250");
-    _mint(to, amount);
+        require(amount >= 250, "Amount to be minted should be greater than or equal to 250");
+        _mint(to, amount);
     }
 
     function burnToken(uint256 amount) public {
         _burn(msg.sender, amount);
     }
- 
+
     function transferToken(address recipient, uint256 amount) public virtual returns (bool) {
-    require(amount <= balanceOf(_msgSender()), "ERC20: transfer amount exceeds balance");
-    _transfer(_msgSender(), recipient, amount);
-    _burn(_msgSender(), amount); 
-    return true;
+        require(amount <= balanceOf(_msgSender()), "ERC20: transfer amount exceeds balance");
+        _transfer(_msgSender(), recipient, amount);
+        return true;
     }
 
+    function redeemKinClass(uint256 kinId) external {
+        uint256 kinPrice = KinsClass[kinId];
+        require(kinPrice > 0, "Kins Class does not exist");
+        require(balanceOf(msg.sender) >= kinPrice, "Insufficient balance");
 
-   function redeemKinClass(uint256 kinId) public {
-    require(KinsClass[kinId] > 0, "Invalid KinsClassID"); 
-    uint256 price = KinsClass[kinId];
-    require(balanceOf(msg.sender) >= price, "Insufficient balance");
+        _transfer(msg.sender, address(this), kinPrice);
 
-    _burn(msg.sender, price);
-    emit KinsClassRedeemed(msg.sender, kinId, price);
+        delete KinsClass[kinId];
     }
 
     function balanceOf(address account) public view virtual override returns (uint256) {
         return super.balanceOf(account);
     }
 
-   function getKinsClassPrice(uint256 kinId) public view returns (uint256) {
-    require(KinsClass[kinId] > 0, "No existing KinID");
-    return KinsClass[kinId];
+    function getKinsClassPrice(uint256 kinId) public view returns (uint256) {
+        require(KinsClass[kinId] > 0, "No existing KinID");
+        return KinsClass[kinId];
     }
-
 }
