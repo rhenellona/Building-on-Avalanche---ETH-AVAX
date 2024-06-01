@@ -6,17 +6,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract DegenToken is ERC20, Ownable {
     mapping(uint256 => uint256) public KinsClass;
+    mapping(address => uint256[]) private redeemedKinsClasses; // Tracking redeemed KinsClasses by address
 
     event KinsClassRedeemed(address indexed redeemer, uint256 indexed kinId, uint256 price);
 
     constructor(uint256 initialSupply) ERC20("Degen", "DGN") Ownable(msg.sender) {
-        _mint(msg.sender, initialSupply);
+    _mint(msg.sender, initialSupply);
 
-        KinsClass[1] = 400;
-        KinsClass[2] = 300;
-        KinsClass[3] = 20;
-        KinsClass[4] = 450;
+    KinsClass[1] = 400;
+    KinsClass[2] = 300;
+    KinsClass[3] = 20;
+    KinsClass[4] = 450;
     }
+
 
     function checkDGNTokenBal() external view returns (uint256) {
         return balanceOf(msg.sender);
@@ -44,7 +46,9 @@ contract DegenToken is ERC20, Ownable {
 
         _transfer(msg.sender, address(this), kinPrice);
 
-        delete KinsClass[kinId];
+        redeemedKinsClasses[msg.sender].push(kinId); // Track the redeemed KinsClass
+
+        emit KinsClassRedeemed(msg.sender, kinId, kinPrice);
     }
 
     function balanceOf(address account) public view virtual override returns (uint256) {
@@ -54,5 +58,9 @@ contract DegenToken is ERC20, Ownable {
     function getKinsClassPrice(uint256 kinId) public view returns (uint256) {
         require(KinsClass[kinId] > 0, "No existing KinID");
         return KinsClass[kinId];
+    }
+
+    function getRedeemedItems() public view returns (uint256[] memory) {
+        return redeemedKinsClasses[msg.sender];
     }
 }
