@@ -6,19 +6,23 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract DegenToken is ERC20, Ownable {
     mapping(uint256 => uint256) public KinsClass;
-    mapping(address => uint256[]) private redeemedKinsClasses; // Tracking redeemed KinsClasses by address
+    mapping(uint256 => string) public KinsClassNames; 
+    mapping(address => uint256[]) private redeemedKinsClasses; 
 
     event KinsClassRedeemed(address indexed redeemer, uint256 indexed kinId, uint256 price);
 
     constructor(uint256 initialSupply) ERC20("Degen", "DGN") Ownable(msg.sender) {
-    _mint(msg.sender, initialSupply);
+        _mint(msg.sender, initialSupply);
 
-    KinsClass[1] = 400;
-    KinsClass[2] = 300;
-    KinsClass[3] = 20;
-    KinsClass[4] = 450;
+        KinsClass[1] = 400;
+        KinsClassNames[1] = "Amethyst";
+        KinsClass[2] = 300;
+        KinsClassNames[2] = "Sapphire";
+        KinsClass[3] = 20;
+        KinsClassNames[3] = "Beryl";
+        KinsClass[4] = 450;
+        KinsClassNames[4] = "Garnet";
     }
-
 
     function checkDGNTokenBal() external view returns (uint256) {
         return balanceOf(msg.sender);
@@ -30,6 +34,7 @@ contract DegenToken is ERC20, Ownable {
     }
 
     function burnToken(uint256 amount) public {
+        require(amount >= 20, "Amount to be burned should be greater than or equal to 20");
         _burn(msg.sender, amount);
     }
 
@@ -39,15 +44,13 @@ contract DegenToken is ERC20, Ownable {
         return true;
     }
 
-    function redeemKinClass(uint256 kinId) external {
+    function redeemKinsClass(uint256 kinId) external {
         uint256 kinPrice = KinsClass[kinId];
         require(kinPrice > 0, "Kins Class does not exist");
         require(balanceOf(msg.sender) >= kinPrice, "Insufficient balance");
 
         _transfer(msg.sender, address(this), kinPrice);
-
-        redeemedKinsClasses[msg.sender].push(kinId); // Track the redeemed KinsClass
-
+        redeemedKinsClasses[msg.sender].push(kinId); 
         emit KinsClassRedeemed(msg.sender, kinId, kinPrice);
     }
 
@@ -55,12 +58,22 @@ contract DegenToken is ERC20, Ownable {
         return super.balanceOf(account);
     }
 
-    function getKinsClassPrice(uint256 kinId) public view returns (uint256) {
-        require(KinsClass[kinId] > 0, "No existing KinID");
-        return KinsClass[kinId];
+    function getKinsClassPriceandName(uint256 kinId) public view returns (uint256, string memory) {
+    require(KinsClass[kinId] > 0, "No existing KinID");
+    return (KinsClass[kinId], KinsClassNames[kinId]);
     }
 
-    function getRedeemedItems() public view returns (uint256[] memory) {
-        return redeemedKinsClasses[msg.sender];
+    function getRedeemedKins(address player) public view returns (uint256[] memory, string[] memory) {
+    uint256[] memory redeemedIds = redeemedKinsClasses[player];
+    string[] memory redeemedNames = new string[](redeemedIds.length);
+
+    for (uint256 i = 0; i < redeemedIds.length; i++) {
+        uint256 kinId = redeemedIds[i];
+        redeemedNames[i] = KinsClassNames[kinId];
     }
-}
+
+    return (redeemedIds, redeemedNames);
+    }
+
+    }
+
