@@ -55,10 +55,6 @@ contract DegenToken is ERC20, Ownable {
         emit KinsClassRedeemed(msg.sender, kinId, kinsClass.price);
     }
 
-    function balanceOf(address account) public view virtual override returns (uint256) {
-        return super.balanceOf(account);
-    }
-
     function getRedeemedKins(address player) public view returns (uint256[] memory, string[] memory) {
         uint256[] memory redeemedIds = redeemedKinsClasses[player];
         string[] memory redeemedNames = new string[](redeemedIds.length);
