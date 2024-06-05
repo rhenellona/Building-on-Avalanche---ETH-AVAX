@@ -13,6 +13,7 @@ Allows minting, burning, redeeming, checking balance and transferring tokens bet
 3. Allows transferring tokens to other addresses. 
 4. Allows checking total supply of other addresses.
 5. Allows to check amount of Kins Class
+6. Allows adding redeemable items and check players redeemed items.
 
 ### What to do before executing program?
 
